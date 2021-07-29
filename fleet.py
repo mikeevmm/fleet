@@ -87,7 +87,8 @@ if __name__ == "__main__":
         print('Aborted.')
         exit(0)
 
-    with open('secrets.json', 'r') as secrets_file:
+    basepath = os.path.dirname(os.path.realpath(__file__))
+    with open(os.path.join(basepath, 'secrets.json'), 'r') as secrets_file:
         secrets = json.load(secrets_file)
     flounder = secrets['flounder']
 
