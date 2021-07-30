@@ -173,7 +173,7 @@ if __name__ == "__main__":
             # Now we need to reopen the file in write mode to re-write the
             # contents. Because this will truncate the file (which will erase
             # everything if the operation fails), we will save a backup first.
-            with open('.journal.bak', 'w') as backup:
+            with open(f'{basepath}/.journal.bak', 'w') as backup:
                 for line in contents:
                     backup.write(line)
 
