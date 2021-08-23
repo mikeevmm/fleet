@@ -73,20 +73,8 @@ def get_input_from_editor(initial_msg, editor_exe):
     
     return edited_msg
 
-if __name__ == "__main__":
-    editor = os.environ.get('VISUAL', '/usr/bin/vim')
-    default = 'Write tweet here. Leave empty or save without quitting to abort.'
-    tweet = get_input_from_editor(default, editor)
 
-    if tweet == default:
-        print('Aborted.')
-        exit(0)
-
-    tweet = tweet.strip()
-    if not tweet:
-        print('Aborted.')
-        exit(0)
-
+def write_journal(tweet):
     basepath = os.path.dirname(os.path.realpath(__file__))
     with open(os.path.join(basepath, 'secrets.json'), 'r') as secrets_file:
         secrets = json.load(secrets_file)
@@ -185,3 +173,96 @@ if __name__ == "__main__":
     print(f'Wrote {len(tweet)} chars to flounder.')
     print(f'Open https://{flounder["user"]}.flounder.online/journal.gmi to see'
             ' your post.')
+
+
+def write_gemlog(tweet, editor):
+    basepath = os.path.dirname(os.path.realpath(__file__))
+    with open(os.path.join(basepath, 'secrets.json'), 'r') as secrets_file:
+        secrets = json.load(secrets_file)
+    flounder = secrets['flounder']
+
+    with paramiko.Transport(('flounder.online', 2024)) as transport:
+        transport.connect(
+                username=flounder['user'], password=flounder['password'])
+        with paramiko.SFTPClient.from_transport(transport) as sftp:
+            # 👇 Post edition loop; broken out of if post & details are valid
+            while True:
+                # 👇 Title prompt loop; broken out of if title is valid
+                while True:
+                    # Prompt for, and canonicalize, title of new gemlog entry
+                    title = input('Gemlog title: ').strip()
+                    today = datetime.date.today()
+                    canonic_title = (
+                            f'{today.year}-{today.month:02d}-{today.day:02d}'
+                            f'{title.replace(" ", "-")}')
+                    filename = f'gemlog/{canonic_title}.gmi'
+
+                    # Check that title does not already exist.
+                    try:
+                        sftp.stat(filename)
+                        # File exists, because exception was not raised
+                        print('A file of that title already exists!')
+                        continue
+                    except IOError:
+                        # File does not exist
+                        break
+                
+                # Confirmation
+                print('')
+                print('Please confirm the post details below.')
+                print('Title: ', title)
+                print('Date: ',
+                        f'{today.year}-{today.month:02d}-{today.day:02d}')
+                print('Post:\n')
+                print(tweet)
+                print('')
+
+                answer = input('Does this look ok? [y/N] ').strip().lower()
+
+                if answer in ('y', 'yes'):
+                    break
+
+                # Go through tweet edition again;
+                # We restart the editor but with the existing text
+                tweet = get_input_from_editor(tweet, editor)
+
+                continue # to title prompt and confirmation
+            
+            # Title and tweet are confirmed. Write new file to sshftp
+            with sftp.open(filename, 'w') as outfile:
+                outfile.write(f'# {title}\n\n')
+                outfile.write(tweet)
+                outfile.write('\n\n=> gemini://miguelmurca.flounder.online 🔙')
+
+    # Fun statistics for the user to look at
+    print(f'Wrote {len(tweet)} chars to flounder.')
+    print(f'Open https://{flounder["user"]}.flounder.online/{filename} to see'
+            ' your post.')
+
+
+if __name__ == "__main__":
+    editor = os.environ.get('VISUAL', '/usr/bin/vim')
+    default = 'Write tweet here. Leave empty or save without quitting to abort.'
+    tweet = get_input_from_editor(default, editor)
+
+    if tweet == default:
+        print('Aborted.')
+        exit(0)
+
+    tweet = tweet.strip()
+    if not tweet:
+        print('Aborted.')
+        exit(0)
+
+    to_journal = True
+    if len(tweet) > 280:
+        print('Your post is longer than 280 characters.')
+        answer = (input('Do you wish to write a gemlog instead? [y/N] ')
+                    .strip().lower())
+        if answer in ('y', 'yes'):
+            to_journal = False
+
+    if to_journal:
+        write_journal(tweet)
+    else:
+        write_gemlog(tweet, editor)
