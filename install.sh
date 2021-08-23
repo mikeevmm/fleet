@@ -71,7 +71,7 @@ then
     echo 'to make sure that I'"'"'m not stealing your credentials.)'
     echo ''
 
-    echo -n '{ "flounder": { "username": "' > "$DIR/secrets.json"
+    echo -n '{ "flounder": { "user": "' > "$DIR/secrets.json"
     read -p 'Flounder username: ' -r
     echo -n "$REPLY" >> secrets.json
     echo -n '", "password": "' >> secrets.json
