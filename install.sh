@@ -2,8 +2,34 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
+echo -e "Checking whether python3 is present..."
+if command -v python3 >/dev/null 2>&1
+then
+        echo -e "\033[32mFound.\033[0m"
+else
+        echo -e "\033[91mCould not find Python3.\033[0m"
+fi
+
+echo ''
+echo -e "This script will install the requirements listed in "
+echo -e "$DIR/requirements.txt"
+echo -e "using python3 -m pip install -r .../requirements.txt"
+echo -e "You can do this yourself manually later."
+echo ''
+read -p $'\033[33mInstall dependencies? [Y/n]?\033[0m ' -r
+if [[ ! $REPLY =~ ^[Nn]$ ]]
+then
+    python3 -m pip install -r "$DIR/requirements.txt"
+    if [ ! $? -eq 0 ]
+    then
+        echo -e "\033[91mSomething went wrong.\033[0m"
+        exit 1
+    fi
+fi
+
 if [ ! -f "$HOME/bin/fleet" ]
 then
+    echo ''
     echo -e "This script will add a symlink from"
     echo -e "$HOME/bin/fleet"
     echo -e "to"
@@ -16,6 +42,7 @@ then
     fi
 
     if [ ! -d $HOME/bin ]; then
+        echo ''
         echo -e "$HOME/bin does not exist, creating that directory."
         read -p '\033[33mIs this ok [N/y]?\033[0m ' -r
         if [[ ! $REPLY =~ ^[Yy]$ ]]
