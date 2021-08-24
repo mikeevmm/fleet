@@ -251,7 +251,7 @@ def write_gemlog(tweet, editor):
 
 if __name__ == "__main__":
     editor = os.environ.get('VISUAL', '/usr/bin/vim')
-    default = 'Write tweet here. Leave empty or save without quitting to abort.'
+    default = 'Write tweet here. Leave empty or quit without saving to abort.'
     tweet = get_input_from_editor(default, editor)
 
     if tweet == default:
