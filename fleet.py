@@ -98,31 +98,40 @@ def write_journal(tweet):
                 if parser.eof():
                     situation = 'first post'
                 else:
-                    # Expect to find a '#'
-                    parser.match(b'#')
+                    try:
+                        # Expect to find a '#'
+                        parser.match(b'#')
 
-                    # Ignore following whitespace 
-                    parser.match_while(lambda c: c.decode('UTF-8').isspace())
-                    
-                    # Expect day/month/year separated by '-'
-                    year = ''.join(x.decode('UTF-8') for x in
-                            parser.match_while(
-                                lambda c: c.decode('UTF-8').isnumeric()))
-                    parser.match(b'-')
-                    month = ''.join(x.decode('UTF-8') for x in
-                            parser.match_while(
-                                lambda c: c.decode('UTF-8').isnumeric()))
-                    parser.match(b'-')
-                    day = ''.join(x.decode('UTF-8') for x in 
-                            parser.match_while(
-                                lambda c: c.decode('UTF-8').isnumeric()))
+                        # Ignore following whitespace 
+                        parser.match_while(
+                                lambda c: c.decode('UTF-8').isspace())
+                        
+                        # Expect day/month/year separated by '-'
+                        year = ''.join(x.decode('UTF-8') for x in
+                                parser.match_while(
+                                    lambda c: c.decode('UTF-8').isnumeric()))
+                        parser.match(b'-')
+                        month = ''.join(x.decode('UTF-8') for x in
+                                parser.match_while(
+                                    lambda c: c.decode('UTF-8').isnumeric()))
+                        parser.match(b'-')
+                        day = ''.join(x.decode('UTF-8') for x in 
+                                parser.match_while(
+                                    lambda c: c.decode('UTF-8').isnumeric()))
 
-                    # Match against current date
-                    if (int(year) == today.year and int(month) == today.month
-                            and int(day) == today.day):
-                        situation = 'same day'
-                    else:
-                        situation = 'new day'
+                        # Match against current date
+                        if (int(year) == today.year
+                                and int(month) == today.month
+                                and int(day) == today.day):
+                            situation = 'same day'
+                        else:
+                            situation = 'new day'
+                    except MatchException:
+                        # If we fail to match anything we're probably dealing
+                        # with inconsistent formatting/hand-input content, and
+                        # default to behaving as though it is a first post.
+                        # This should also fix future posts.
+                        situation = 'first post'
 
                 del parser
 
