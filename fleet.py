@@ -241,7 +241,7 @@ def write_gemlog(tweet, editor):
             with sftp.open(filename, 'w') as outfile:
                 outfile.write(f'# {title}\n\n')
                 outfile.write(tweet)
-                outfile.write('\n\n=> gemini://miguelmurca.flounder.online 🔙')
+                outfile.write('\n\n=> //miguelmurca.flounder.online 🔙')
 
     # Fun statistics for the user to look at
     print(f'Wrote {len(tweet)} chars to flounder.')
