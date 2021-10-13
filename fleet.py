@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/home/miguelmurca/.pyenv/versions/fleet/bin/python3
 # -*- coding: utf-8 -*-
 
 import tempfile
@@ -175,8 +175,9 @@ def write_journal(tweet):
                     backup.write(line)
 
             with sftp.file('journal.gmi', 'w') as journal_file:
-                for line in contents:
-                    journal_file.write(line.encode('UTF-8'))
+                # Write everything at once! Otherwise Paramiko will sync the
+                # file at each write, taking very long.
+                journal_file.write(''.join(contents).encode('UTF-8'))
 
     # Fun statistics for the user to look at
     print(f'Wrote {len(tweet)} chars to flounder.')
