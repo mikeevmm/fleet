@@ -11,7 +11,7 @@ If you're the type of person who thinks writing your [Flounder] posts from vim¹
 ## How?
 
 ```bash
-git clone git@github.com:mikeevmm/fleet.git
+git clone https://github.com/mikeevmm/fleet
 cd fleet
 bash install.sh     # Follow instructions
 ```
